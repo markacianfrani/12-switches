@@ -1,0 +1,22 @@
+{
+  "name": "ai-sdk",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run index.ts",
+    "build": "tsc",
+    "lint": "biome lint",
+    "format": "biome format --write"
+  },
+  "dependencies": {
+    "@cianfrani/lil-ai-toolbox": "^0.0.6",
+    "@cianfrani/lmstudio": "^0.0.9",
+    "ai": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "latest",
+    "@types/bun": "latest",
+    "typescript": "latest"
+  }
+}
