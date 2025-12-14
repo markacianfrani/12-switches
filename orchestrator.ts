@@ -1,6 +1,6 @@
 import { writeFile } from "fs/promises";
 import { runAgent } from "./index";
-import type { AgentRunLog } from "./logger";
+import { sumUsages, type AgentRunLog } from "./logger";
 
 async function orchestrator(runCount = 3): Promise<void> {
   const theories: string[] = [];
@@ -16,7 +16,11 @@ async function orchestrator(runCount = 3): Promise<void> {
   }
 
   console.log("All theories:", theories);
-  await writeFile("logs.json", JSON.stringify(logs, null, 2));
+  const cumulativeUsage = sumUsages(logs.map(({ log }) => log.usage));
+  await writeFile(
+    "logs.json",
+    JSON.stringify({ runs: logs, cumulativeUsage }, null, 2),
+  );
   console.log('Detailed logs saved to "logs.json".');
 }
 

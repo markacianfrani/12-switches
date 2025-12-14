@@ -1,3 +1,5 @@
+import type { LanguageModelUsage } from "ai";
+
 export type ToolInteraction = {
   input: unknown;
   output: unknown;
@@ -11,8 +13,11 @@ export type StepLog = {
 
 export type AgentRunLog = {
   theory: string;
+  usage: LanguageModelUsage;
   steps: StepLog[];
 };
+
+export type UsageTotals = Record<string, number>;
 
 type RawStep = {
   content?: Array<{ type?: string; [key: string]: unknown }>;
@@ -20,15 +25,18 @@ type RawStep = {
 
 export function logAgentRun({
   theory,
+  usage,
   steps,
   onLog,
 }: {
   theory: string;
+  usage: LanguageModelUsage;
   steps: RawStep[];
   onLog?: (log: AgentRunLog) => void;
 }): AgentRunLog {
   const log = {
     theory,
+    usage,
     steps: summarizeSteps(steps),
   };
   onLog?.(log);
@@ -37,7 +45,6 @@ export function logAgentRun({
 
 export function summarizeSteps(steps: RawStep[]): StepLog[] {
   return steps.map((step, index) => {
-    console.log(step);
     const content = Array.isArray(step.content) ? step.content : [];
 
     const responses = content
@@ -45,6 +52,7 @@ export function summarizeSteps(steps: RawStep[]): StepLog[] {
       .map((item) => String(item.text ?? ""));
 
     const toolInteractions: ToolInteraction[] = [];
+
     content.forEach((item) => {
       if (item.type === "tool-call") {
         toolInteractions.push({
@@ -72,4 +80,18 @@ export function summarizeSteps(steps: RawStep[]): StepLog[] {
       toolInteractions,
     };
   });
+}
+
+export function sumUsages(usages: Array<LanguageModelUsage | undefined>): UsageTotals {
+  return usages.reduce<UsageTotals>((acc, usage) => {
+    if (!usage) {
+      return acc;
+    }
+    for (const [key, value] of Object.entries(usage)) {
+      if (typeof value === "number") {
+        acc[key] = (acc[key] ?? 0) + value;
+      }
+    }
+    return acc;
+  }, {});
 }

@@ -3,7 +3,7 @@ import type { ModelMessage } from "ai";
 import { lmstudio } from "@cianfrani/lmstudio";
 import { writeFile } from "fs/promises";
 import { mysteryDeviceTool } from "./mystery-device";
-import { logAgentRun, type AgentRunLog } from "./logger";
+import { logAgentRun, sumUsages, type AgentRunLog } from "./logger";
 
 const MAX_ATTEMPTS = 20;
 const TOTAL_STEPS = MAX_ATTEMPTS + 1;
@@ -91,6 +91,7 @@ export async function runAgent(
 
   logAgentRun({
     theory,
+    usage: result.totalUsage,
     steps: result.steps as unknown as Array<{ content?: any[] }>,
     onLog: options.onLog,
   });
@@ -104,10 +105,14 @@ if (import.meta.main) {
     onLog: (log) => logs.push(log),
   });
   console.log("Theory:", theory);
+  const cumulativeUsage = sumUsages(logs.map((log) => log.usage));
   await writeFile(
     "logs.json",
     JSON.stringify(
-      logs.map((log, index) => ({ agent: index + 1, ...log })),
+      {
+        runs: logs.map((log, index) => ({ agent: index + 1, ...log })),
+        cumulativeUsage,
+      },
       null,
       2,
     ),
