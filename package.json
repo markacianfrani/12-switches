@@ -17,6 +17,7 @@
   "devDependencies": {
     "@biomejs/biome": "latest",
     "@types/bun": "latest",
+    "oxfmt": "^0.16.0",
     "typescript": "latest"
   }
 }
