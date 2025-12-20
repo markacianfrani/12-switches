@@ -4,17 +4,20 @@ import { lmstudio } from "@cianfrani/lmstudio";
 import { writeFile } from "fs/promises";
 import { mysteryDeviceTool } from "./mystery-device";
 import { logAgentRun, sumUsages, type AgentRunLog } from "./logger";
+import { openrouter } from "@openrouter/ai-sdk-provider";
 
 const MAX_ATTEMPTS = 20;
 const TOTAL_STEPS = MAX_ATTEMPTS + 1;
-const SYSTEM_PROMPT = "You are a participant in an experiment at Bell Labs..";
+const MAX_OUTPUT_TOKENS = 7380;
+const SYSTEM_PROMPT =
+  "You are a participant in an experiment at Bell Labs. Keep outputs concise, unformatted, and focused on briefing the next agent.";
 
 type RunAgentOptions = {
   onLog?: (log: AgentRunLog) => void;
 };
 
 function buildInitialUserMessage(previousTheories: string[]): string {
-  const base = `You're seated at a switch box with 12 unlabeled toggles and a single light that flashes green for success or red for failure. Use the mysteryDevice tool exactly ${MAX_ATTEMPTS} times to test hypotheses, then deliver your clearest theory of what makes the light turn green.`;
+  const base = `You're seated at a switch box with 12 unlabeled toggles and a single light that flashes green for success or red for failure. Use the mysteryDevice tool exactly ${MAX_ATTEMPTS} times to test hypotheses, then deliver your clearest theory of what makes the light turn green. Respond in plain text only—no markdown or lists—and write as a briefing for the next agent who will take over.`;
   if (previousTheories.length === 0) {
     return base;
   }
@@ -72,7 +75,17 @@ export async function runAgent(
   options: RunAgentOptions = {},
 ): Promise<string> {
   const agent = new Agent({
-    model: lmstudio("gemma-3"),
+    // model: lmstudio("gpt-oss"),
+    model: openrouter("openai/gpt-4o-mini"),
+    maxOutputTokens: MAX_OUTPUT_TOKENS,
+    // @ts-ignore
+    providerOptions: {
+      openrouter: {
+        reasoning: {
+          max_tokens: 7000,
+        },
+      },
+    },
     tools: {
       mysteryDevice: mysteryDeviceTool,
     },

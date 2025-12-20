@@ -11,6 +11,7 @@
   "dependencies": {
     "@cianfrani/lil-ai-toolbox": "^0.0.6",
     "@cianfrani/lmstudio": "^0.0.9",
+    "@openrouter/ai-sdk-provider": "^1.5.3",
     "ai": "latest",
     "zod": "latest"
   },
